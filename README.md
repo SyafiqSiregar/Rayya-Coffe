@@ -220,5 +220,5 @@ Untuk panduan operasional kasir dan rincian arsitektur sistem, Anda dapat membac
 
 ## Lisensi & Hak Cipta
 
-Dikembangkan untuk operasional **Raya Koffie & 439 Carwash**, Daya Asri, Tulang Bawang Barat (Tubaba), Lampung.  
+Dikembangkan oleh SysDevLab untuk operasional **Raya Koffie & 439 Carwash**, Daya Asri, Tulang Bawang Barat (Tubaba), Lampung.  
 Hak Cipta dilindungi undang-undang.
