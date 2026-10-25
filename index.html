@@ -8,7 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css" />
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="/lucide.min.js"></script>
+  <script>
+    window.lucide = window.lucide || { createIcons: function() {} };
+  </script>
 </head>
 <body>
 
@@ -114,63 +117,211 @@
     <main class="main-area">
       <!-- 1. DASHBOARD -->
       <section id="dashboard" class="page-view admin-only active">
-        <header class="page-header">
-          <div>
-            <h2 class="page-title">Ringkasan Hari Ini</h2>
-            <p class="page-subtitle">Performa penjualan Raya Koffie & Carwash</p>
+        <!-- Dashboard Operasional Header -->
+        <header class="dash-top-header">
+          <div class="dash-header-title-box">
+            <h1 class="dash-main-title">Dashboard Operasional</h1>
+            <p class="dash-main-subtitle">Pantau performa kasir, omset, dan laba bersih harian</p>
           </div>
-          <div class="date-badge"><i data-lucide="calendar"></i> <span id="current-date"></span></div>
-        </header>
-        
-        <!-- Dashboard Overview Card -->
-        <div class="dash-overview-card">
-          <div class="overview-header">
-            <div>
-              <span class="overview-header-label">Total Omset Penjualan Hari Ini</span>
-              <div class="overview-main-val" id="dash-laba">Rp 0</div>
+          <div class="dash-header-actions">
+            <div class="dash-date-badge">
+              <i data-lucide="calendar"></i>
+              <span id="current-date"></span>
             </div>
-            <div style="text-align: right;">
-              <div style="font-size: 13px; color: var(--text-muted);">
-                Total Transaksi: <strong id="dash-trx-count" style="color:var(--text-main);">0</strong>
+            <button class="dash-btn-open-pos" id="dash-btn-open-pos">
+              <i data-lucide="shopping-bag"></i>
+              <span>Buka Kasir</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Top 4 Metric Cards -->
+        <div class="dash-stats-row">
+          <!-- Card 1: Total Omset Penjualan -->
+          <div class="dash-stat-card">
+            <div class="dash-stat-top">
+              <span class="dash-stat-label">Total Omset Penjualan</span>
+              <div class="dash-icon-circle circle-blue">
+                <i data-lucide="dollar-sign"></i>
               </div>
-              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-                Estimasi Laba Bersih: <strong id="dash-net-profit" style="color:var(--success);">Rp 0</strong>
-              </div>
+            </div>
+            <div class="dash-stat-val" id="dash-laba">Rp 0</div>
+            <div class="dash-stat-bottom">
+              <span class="dash-badge badge-blue">
+                <i data-lucide="receipt"></i> <strong id="dash-trx-count">0 Transaksi</strong>
+              </span>
+              <span class="dash-stat-subtext">Pesanan hari ini</span>
             </div>
           </div>
 
-          <div class="metrics-row">
-            <div class="metric-item">
-              <span class="metric-label">
-                <span class="metric-indicator indicator-cafe"></span> Pendapatan Kafe
-              </span>
-              <span class="metric-val" id="dash-kafe">Rp 0</span>
+          <!-- Card 2: Estimasi Laba Bersih -->
+          <div class="dash-stat-card">
+            <div class="dash-stat-top">
+              <span class="dash-stat-label">Estimasi Laba Bersih</span>
+              <div class="dash-icon-circle circle-green">
+                <i data-lucide="trending-up"></i>
+              </div>
             </div>
-            <div class="metric-item">
-              <span class="metric-label">
-                <span class="metric-indicator indicator-wash"></span> Pendapatan Carwash
-              </span>
-              <span class="metric-val" id="dash-cuci">Rp 0</span>
+            <div class="dash-stat-val text-success" id="dash-net-profit">Rp 0</div>
+            <div class="dash-stat-bottom">
+              <span class="dash-badge badge-green" id="dash-margin-badge">Margin Toko</span>
+              <span class="dash-stat-subtext">Omset dikurangi biaya</span>
             </div>
-            <div class="metric-item">
-              <span class="metric-label">
-                <span class="metric-indicator indicator-expense"></span> Biaya Operasional
-              </span>
-              <span class="metric-val" id="dash-pengeluaran">Rp 0</span>
+          </div>
+
+          <!-- Card 3: Breakdown Layanan -->
+          <div class="dash-stat-card">
+            <div class="dash-stat-top">
+              <span class="dash-stat-label">Breakdown Layanan</span>
+              <div class="dash-icon-circle circle-blue">
+                <i data-lucide="layers"></i>
+              </div>
+            </div>
+            <div class="dash-breakdown-row">
+              <div class="dash-breakdown-col">
+                <div class="breakdown-sublabel"><span class="dot dot-kafe"></span> Kafe</div>
+                <div class="breakdown-amount" id="dash-kafe">Rp 0</div>
+              </div>
+              <div class="dash-breakdown-divider"></div>
+              <div class="dash-breakdown-col">
+                <div class="breakdown-sublabel"><span class="dot dot-cuci"></span> Cuci</div>
+                <div class="breakdown-amount" id="dash-cuci">Rp 0</div>
+              </div>
+            </div>
+            <div class="dash-stat-bottom">
+              <span class="dash-stat-subtext">F&B & Carwash aktif</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Biaya Operasional -->
+          <div class="dash-stat-card">
+            <div class="dash-stat-top">
+              <span class="dash-stat-label">Biaya Operasional</span>
+              <div class="dash-icon-circle circle-red">
+                <i data-lucide="wallet"></i>
+              </div>
+            </div>
+            <div class="dash-stat-val text-danger" id="dash-pengeluaran">Rp 0</div>
+            <div class="dash-stat-bottom">
+              <span class="dash-badge badge-red">Kas Keluar</span>
+              <span class="dash-stat-subtext">Bahan baku & talangan</span>
             </div>
           </div>
         </div>
 
-        <div class="dashboard-bottom">
-          <div class="panel">
-            <h3 class="panel-title">Produk Terlaris Hari Ini</h3>
-            <ul class="top-list" id="dash-top-products">
+        <!-- Middle Charts Row -->
+        <div class="dash-charts-row">
+          <!-- Chart 1: Indeks Tren Penjualan & Jam Sibuk -->
+          <div class="dash-card dash-chart-card">
+            <div class="dash-card-header-flex">
+              <div>
+                <h3 class="dash-card-title"><i data-lucide="trending-up"></i> Indeks Tren Penjualan & Jam Sibuk</h3>
+                <p class="dash-card-subtitle">Pergerakan omset Kafe & Carwash berdasarkan waktu</p>
+              </div>
+              <div class="dash-pill-group">
+                <button class="dash-pill-btn active" id="dash-btn-trend-today">
+                  <i data-lucide="clock"></i> Jam Sibuk Hari Ini
+                </button>
+                <button class="dash-pill-btn" id="dash-btn-trend-week">
+                  <i data-lucide="calendar"></i> 7 Hari Terakhir
+                </button>
+              </div>
+            </div>
+
+            <!-- SVG Bar Chart Canvas -->
+            <div class="dash-chart-svg-wrap" id="dash-trend-chart-box">
+              <!-- Rendered via JS -->
+            </div>
+
+            <div class="dash-chart-legend-row">
+              <div class="dash-chart-legend">
+                <span class="legend-item"><span class="dot dot-kafe"></span> Kafe: <strong id="dash-legend-kafe">Rp 0</strong></span>
+                <span class="legend-item"><span class="dot dot-cuci"></span> Carwash: <strong id="dash-legend-cuci">Rp 0</strong></span>
+              </div>
+              <div class="dash-peak-pill" id="dash-peak-pill">
+                <i data-lucide="zap"></i> <span id="dash-peak-text">Jam Sibuk: -</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart 2: Komposisi Bisnis -->
+          <div class="dash-card dash-donut-card">
+            <div class="dash-card-header-flex">
+              <div>
+                <h3 class="dash-card-title"><i data-lucide="pie-chart"></i> Komposisi Bisnis</h3>
+                <p class="dash-card-subtitle">Rasio kontribusi layanan & metode</p>
+              </div>
+              <div class="dash-pill-group">
+                <button class="dash-pill-btn active" id="dash-btn-comp-service">Layanan</button>
+                <button class="dash-pill-btn" id="dash-btn-comp-payment">Metode Bayar</button>
+              </div>
+            </div>
+
+            <!-- SVG Donut Chart Area -->
+            <div class="dash-donut-svg-wrap" id="dash-donut-chart-box">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Donut Legend Items -->
+            <div class="dash-donut-legend-list" id="dash-donut-legend-box">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Aksi Cepat Operasional -->
+        <div class="dash-quick-section">
+          <div class="dash-quick-label">AKSI CEPAT OPERASIONAL</div>
+          <div class="dash-quick-grid">
+            <button class="dash-quick-action-card" id="dash-act-new-pos" type="button">
+              <div class="dash-quick-icon"><i data-lucide="shopping-bag"></i></div>
+              <span class="dash-quick-text">Transaksi Baru</span>
+            </button>
+            <button class="dash-quick-action-card" id="dash-act-expense" type="button">
+              <div class="dash-quick-icon"><i data-lucide="plus-circle"></i></div>
+              <span class="dash-quick-text">Catat Biaya Toko</span>
+            </button>
+            <button class="dash-quick-action-card" id="dash-act-history" type="button">
+              <div class="dash-quick-icon"><i data-lucide="receipt"></i></div>
+              <span class="dash-quick-text">Riwayat Transaksi</span>
+            </button>
+            <button class="dash-quick-action-card" id="dash-act-rekap" type="button">
+              <div class="dash-quick-icon"><i data-lucide="printer"></i></div>
+              <span class="dash-quick-text">Cetak Rekap Omset</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bottom Lists (Produk Terlaris & Transaksi Terkini) -->
+        <div class="dash-bottom-row">
+          <!-- Left: Produk Terlaris -->
+          <div class="dash-card dash-list-card">
+            <div class="dash-card-header-flex">
+              <div>
+                <h3 class="dash-card-title">Produk Terlaris Hari Ini</h3>
+                <p class="dash-card-subtitle">Menu makanan, minuman, dan layanan paling diminati</p>
+              </div>
+              <button class="dash-link-action" id="dash-link-kelola-menu" type="button">
+                <span>Kelola Menu</span> <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+            <ul class="dash-rank-list" id="dash-top-products">
               <!-- Rendered via JS -->
             </ul>
           </div>
-          <div class="panel">
-            <h3 class="panel-title">Transaksi Terkini</h3>
-            <ul class="top-list" id="dash-recent-trx">
+
+          <!-- Right: Transaksi Terkini -->
+          <div class="dash-card dash-list-card">
+            <div class="dash-card-header-flex">
+              <div>
+                <h3 class="dash-card-title">Transaksi Terkini</h3>
+                <p class="dash-card-subtitle">5 pesanan kasir terakhir yang berhasil diselesaikan</p>
+              </div>
+              <button class="dash-link-action" id="dash-link-semua-riwayat" type="button">
+                <span>Semua Riwayat</span> <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+            <ul class="dash-recent-list" id="dash-recent-trx">
               <!-- Rendered via JS -->
             </ul>
           </div>
@@ -339,61 +490,507 @@
 
       <!-- 5. PENGELUARAN & BIAYA OPERASIONAL -->
       <section id="expense" class="page-view">
-        <header class="page-header">
-          <div>
-            <h2 class="page-title">Biaya Operasional</h2>
-            <p class="page-subtitle">Pencatatan pengeluaran harian, bahan baku, dan talangan karyawan</p>
+        <!-- HEADER UTAMA BUKU KAS & BIAYA -->
+        <header class="cb-top-header">
+          <div class="cb-top-left">
+            <div class="cb-top-date-line">
+              <button type="button" class="cb-date-arrow" onclick="shiftCashbookDate(-1)" title="Tanggal Sebelumnya" aria-label="Tanggal Sebelumnya">
+                <i data-lucide="chevron-left" style="width:14px;height:14px;"></i>
+              </button>
+              <span class="cb-top-date-text" id="cashbook-date-friendly">MINGGU, 25 OKTOBER 2026</span>
+              <button type="button" class="cb-date-arrow" onclick="shiftCashbookDate(1)" title="Tanggal Berikutnya" aria-label="Tanggal Berikutnya">
+                <i data-lucide="chevron-right" style="width:14px;height:14px;"></i>
+              </button>
+              <input type="date" id="cashbook-active-date" class="cb-date-picker-mini" aria-label="Pilih Tanggal Buku Kas">
+              <button type="button" class="cb-btn-today-mini" id="btn-cashbook-today" onclick="setCashbookToday()">Hari Ini</button>
+              <span class="cb-top-dot">•</span>
+              <span class="cb-top-branch">Raya Koffie • Cabang Utama</span>
+            </div>
+            <h2 class="cb-top-title">Buku Kas & Biaya</h2>
+            <div class="cb-top-actions">
+              <button type="button" class="cb-btn-view-switch" id="tab-mode-history" onclick="toggleExpenseHistoryView()">
+                <i data-lucide="history" style="width:14px;height:14px;"></i>
+                <span id="label-switch-history">Riwayat Bulanan</span>
+                <span class="mode-tab-badge" id="tab-badge-reimb" style="display:none;">0</span>
+              </button>
+              <button type="button" class="cb-btn-print-draft" id="btn-print-cashbook-top" onclick="openCashbookReceiptModal()">
+                <i data-lucide="file-text" style="width:14px;height:14px;"></i> Pratinjau & Ekspor Laporan
+              </button>
+            </div>
           </div>
-          <button class="btn-primary-sm" id="btn-open-add-expense" onclick="openAddExpenseModal()">
-            <i data-lucide="plus"></i> Catat Biaya
-          </button>
+
+          <div class="cb-top-center">
+            <div class="cb-shift-status-pill" id="cashbook-status-pill">
+              <span class="cb-shift-dot"></span>
+              <span id="cashbook-shift-label">Shift Terbuka • Admin Utama</span>
+            </div>
+          </div>
         </header>
 
-        <!-- Anti-Slop Ledger Summary Hero (Eliminates cookie-cutter 4-stat template) -->
-        <div class="expense-ledger-hero">
-          <div class="ledger-hero-primary">
-            <span class="ledger-hero-label">Total Beban Operasional Bulan Ini</span>
-            <div class="ledger-hero-amount" id="exp-stat-month">Rp 0</div>
-            <div class="ledger-hero-meta" id="exp-stat-month-sub">0 Transaksi Pengeluaran</div>
-          </div>
-          <div class="ledger-hero-secondary">
-            <div class="ledger-sub-card">
-              <span class="ledger-sub-label">Kas Keluar Hari Ini</span>
-              <div class="ledger-sub-val" id="exp-stat-today">Rp 0</div>
-              <span class="ledger-sub-desc" id="exp-stat-today-sub">Dari laci kasir: Rp 0</span>
-            </div>
-            <div class="ledger-sub-card alert" id="card-metric-reimb">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <span class="ledger-sub-label">Talangan Karyawan</span>
-                <span class="badge-alert-count" id="exp-stat-reimb-count">0 Menunggu</span>
+        <!-- ========================================================= -->
+        <!-- MODE 1: LEMBAR BUKU KAS & REKONSILIASI LACI (DEFAULT)     -->
+        <!-- ========================================================= -->
+        <div id="expense-view-cashbook">
+          <div class="cashbook-sheet" id="cashbook-sheet">
+            <div class="cb-workspace-grid">
+
+              <!-- =================================================== -->
+              <!-- KOLOM A (KIRI): ALIRAN KAS & BELANJA HARIAN         -->
+              <!-- =================================================== -->
+              <div class="cb-panel cb-panel-left">
+                <div class="cb-panel-header cb-header-light">
+                  <div class="cb-header-title-wrap">
+                    <span class="cb-letter-badge badge-a">A</span>
+                    <div>
+                      <h3 class="cb-panel-title">Aliran Kas & Belanja Harian</h3>
+                      <p class="cb-panel-sub">Catat modal awal pagi dan pengeluaran operasional dari laci</p>
+                    </div>
+                  </div>
+                  <span class="cb-pill-tag">Tahap 1 • Operasional</span>
+                </div>
+
+                <div class="cb-panel-body">
+                  <!-- KOTAK MODAL AWAL LACI (PAGI) -->
+                  <div class="cb-modal-pagi-card">
+                    <div class="cb-modal-pagi-main">
+                      <div class="cb-modal-icon-box">
+                        <i data-lucide="wallet" style="width:18px;height:18px;"></i>
+                      </div>
+                      <div class="cb-modal-info">
+                        <div class="cb-modal-label-row">
+                          <span class="cb-modal-label">MODAL AWAL LACI (PAGI)</span>
+                          <span class="cb-verified-tag"><i data-lucide="check" style="width:11px;height:11px;"></i> Terverifikasi</span>
+                        </div>
+                        <div class="cb-modal-value-row">
+                          <strong class="cb-modal-amount font-numeric" id="cashbook-preview-modal">Rp 0</strong>
+                        </div>
+                        <span class="cb-modal-origin-text" id="cashbook-modal-origin">(Otomatis dari modal tinggal laci kemarin)</span>
+                      </div>
+                      <button type="button" class="cb-btn-koreksi" id="btn-toggle-modal-edit" onclick="toggleModalAwalEdit()">
+                        Ubah Modal
+                      </button>
+                    </div>
+
+                    <!-- Drawer Ubah Modal Awal -->
+                    <div class="cb-modal-edit-drawer" id="cashbook-modal-edit-drawer" style="display:none;">
+                      <div class="cb-edit-drawer-row">
+                        <div class="cashbook-currency-input" style="flex:1;">
+                          <span class="currency-prefix">Rp</span>
+                          <input type="number" id="cashbook-input-modal" placeholder="Contoh: 100000" min="0" step="any" aria-label="Nominal Modal Awal Laci">
+                        </div>
+                        <button type="button" class="btn-link-reset" id="btn-reset-modal-origin" onclick="resetCashbookModalToCarryOver()" style="display:none;">
+                          Pakai Sisa Kemarin
+                        </button>
+                        <button type="button" class="cb-btn-done-mini" onclick="toggleModalAwalEdit(false)">Selesai</button>
+                      </div>
+                      <div class="cashbook-quick-Modal-chips">
+                        <span class="quick-chip-label">Isi cepat:</span>
+                        <button type="button" class="btn-quick-chip" onclick="setQuickModalAwal(50000)">Rp 50rb</button>
+                        <button type="button" class="btn-quick-chip" onclick="setQuickModalAwal(80000)">Rp 80rb</button>
+                        <button type="button" class="btn-quick-chip" onclick="setQuickModalAwal(100000)">Rp 100rb</button>
+                        <button type="button" class="btn-quick-chip" onclick="setQuickModalAwal(150000)">Rp 150rb</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- KOTAK CATAT PENGELUARAN BARU -->
+                  <form class="cb-new-expense-card" id="form-cashbook-quick-add" onsubmit="event.preventDefault(); handleQuickAddExpense();">
+                    <div class="cb-form-card-head">
+                      <div class="cb-form-head-left">
+                        <span class="cb-dot-danger"></span>
+                        <strong>CATAT PENGELUARAN BARU</strong>
+                      </div>
+                      <span class="cb-form-head-hint" id="cb-fund-hint-text">Langsung potong saldo kasir</span>
+                    </div>
+
+                    <!-- Pilih Divisi (3 Tombol Visual + Hidden Select Sinkron) -->
+                    <div class="cb-form-field">
+                      <label class="cb-field-label">Pilih Divisi:</label>
+                      <select id="cashbook-quick-cat" style="display:none;" aria-label="Kategori Belanja">
+                        <option value="KAFE" selected>Kafe</option>
+                        <option value="CUCI">Cuci</option>
+                        <option value="UMUM">Umum</option>
+                      </select>
+                      <div class="cb-divisi-grid" role="radiogroup" aria-label="Pilih Divisi">
+                        <button type="button" class="cb-divisi-btn active" data-divisi="KAFE" onclick="selectCashbookDivisi('KAFE')">
+                          <i data-lucide="coffee" style="width:14px;height:14px;"></i> Kafe (F&B)
+                        </button>
+                        <button type="button" class="cb-divisi-btn" data-divisi="CUCI" onclick="selectCashbookDivisi('CUCI')">
+                          <i data-lucide="car" style="width:14px;height:14px;"></i> Carwash
+                        </button>
+                        <button type="button" class="cb-divisi-btn" data-divisi="UMUM" onclick="selectCashbookDivisi('UMUM')">
+                          <i data-lucide="building-2" style="width:14px;height:14px;"></i> Operasional
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Keterangan Barang & Nominal -->
+                    <div class="cb-desc-nominal-grid">
+                      <div class="cb-form-field">
+                        <label class="cb-field-label" for="cashbook-quick-desc">Keterangan Barang / Keperluan</label>
+                        <input type="text" id="cashbook-quick-desc" class="cb-input-text" placeholder="Cth: Susu Fresh Milk, Galon Aqua, Es Batu..." aria-label="Nama item belanja">
+                      </div>
+                      <div class="cb-form-field">
+                        <label class="cb-field-label" for="cashbook-quick-amount">Nominal (Rp)</label>
+                        <div class="cb-input-rp-wrap">
+                          <span>Rp</span>
+                          <input type="number" id="cashbook-quick-amount" placeholder="0" min="0" step="any" aria-label="Nominal belanja">
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Sumber Pembayaran (Toggle Visual Tegas) -->
+                    <div class="cb-form-field">
+                      <label class="cb-field-label">Sumber Pembayaran:</label>
+                      <div class="cb-source-grid">
+                        <label class="cb-source-option active" id="cb-source-opt-kasir" onclick="selectCashbookFundSource('KASIR')">
+                          <input type="radio" name="cb-quick-fund" value="KASIR" checked>
+                          <i data-lucide="wallet" style="width:15px;height:15px;"></i>
+                          <span>Uang Kas Laci</span>
+                        </label>
+                        <label class="cb-source-option" id="cb-source-opt-karyawan" onclick="selectCashbookFundSource('KARYAWAN')">
+                          <input type="radio" name="cb-quick-fund" value="KARYAWAN">
+                          <i data-lucide="user-plus" style="width:15px;height:15px;"></i>
+                          <span>Talangan Karyawan</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <!-- Input Nama Karyawan (Muncul jika pilih Talangan Karyawan) -->
+                    <div id="cb-quick-employee-wrap" class="cb-employee-inline-box" style="display:none;">
+                      <label class="cb-field-label" for="cashbook-quick-employee">Nama Karyawan yang Menalangi *</label>
+                      <input type="text" id="cashbook-quick-employee" class="cb-input-text" placeholder="Cth: Budi, Siti, Rian...">
+                    </div>
+
+                    <button type="submit" class="cb-btn-submit-expense" id="btn-cashbook-quick-add">
+                      <i data-lucide="plus" style="width:16px;height:16px;"></i> Simpan Pengeluaran Laci
+                    </button>
+                  </form>
+
+                  <!-- DAFTAR PENGELUARAN LACI HARI INI -->
+                  <div class="cb-history-list-section">
+                    <div class="cb-list-head">
+                      <strong>PENGELUARAN LACI HARI INI</strong>
+                      <span id="cashbook-shopping-count" class="cb-list-count">0 Transaksi</span>
+                    </div>
+
+                    <!-- Info Talangan Belum Diganti (Jika Ada pada Tanggal Ini) -->
+                    <div id="cashbook-pending-reimb-notice" class="cashbook-reimb-notice" style="display:none;"></div>
+
+                    <ul class="cb-expense-cards-list" id="cashbook-shopping-list">
+                      <!-- Dirender otomatis oleh JS -->
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- FOOTER KOLOM A: TOTAL PENGELUARAN & SISA MODAL PAGI -->
+                <div class="cb-panel-left-footer">
+                  <div class="cb-footer-row-main">
+                    <span>Total Pengeluaran Kas Laci:</span>
+                    <strong id="cashbook-val-belanja" class="font-numeric cb-text-danger">Rp 0</strong>
+                  </div>
+                  <div class="cb-footer-sisa-bar" id="cashbook-sisa-box">
+                    <div class="cb-sisa-left">
+                      <span class="cb-sisa-title">Sisa Modal Pagi (Modal – Belanja):</span>
+                      <span class="cashbook-sisa-badge" id="cashbook-sisa-badge">MODAL PAS</span>
+                    </div>
+                    <strong class="cb-sisa-amount font-numeric" id="cashbook-val-sisa">Rp 0</strong>
+                    <span id="cashbook-sisa-sub" style="display:none;"></span>
+                  </div>
+                </div>
               </div>
-              <div class="ledger-sub-val alert-text" id="exp-stat-reimb-pending">Rp 0</div>
-              <span class="ledger-sub-desc">Belum dilunasi dari kas kasir</span>
+
+              <!-- =================================================== -->
+              <!-- KOLOM B (KANAN): REKONSILIASI & HITUNG FISIK LACI   -->
+              <!-- =================================================== -->
+              <div class="cb-panel cb-panel-right">
+                <div class="cb-panel-header cb-header-dark">
+                  <div class="cb-header-title-wrap">
+                    <span class="cb-letter-badge badge-b">B</span>
+                    <div>
+                      <h3 class="cb-panel-title">Rekonsiliasi & Hitung Fisik Laci</h3>
+                      <p class="cb-panel-sub">Hitung uang fisik terlebih dahulu, lalu cocokkan dengan saldo sistem</p>
+                    </div>
+                  </div>
+                  <button type="button" class="cb-btn-koreksi-dark" onclick="toggleOmsetManualEdit()">
+                    Input Omset Manual
+                  </button>
+                </div>
+
+                <div class="cb-panel-body">
+                  <!-- Drawer Input Manual Omset / Online (Jika Kasir Ingin Ketik Manual) -->
+                  <div class="cb-omset-edit-drawer" id="cashbook-omset-edit-drawer" style="display:none;">
+                    <div class="cb-omset-edit-head">
+                      <span>Input Manual Penjualan (Jika Tidak Lewat Kasir POS)</span>
+                      <div style="display:flex; gap:6px;">
+                        <button type="button" class="btn-link-reset" id="btn-reset-pos-omset" onclick="resetCashbookOmsetToPos()" style="display:none;">
+                          Reset ke POS
+                        </button>
+                        <button type="button" class="cb-btn-done-mini" onclick="toggleOmsetManualEdit(false)">Selesai</button>
+                      </div>
+                    </div>
+                    <div class="cb-desc-nominal-grid">
+                      <div class="cb-form-field">
+                        <label class="cb-field-label" for="cashbook-input-pendapatan">
+                          Total Pendapatan (Tunai + Online) <span id="cashbook-badge-pendapatan" class="source-mini-badge">POS</span>
+                        </label>
+                        <div class="cb-input-rp-wrap">
+                          <span>Rp</span>
+                          <input type="number" id="cashbook-input-pendapatan" placeholder="0" min="0" step="any">
+                        </div>
+                      </div>
+                      <div class="cb-form-field">
+                        <label class="cb-field-label" for="cashbook-input-online">
+                          QRIS & Transfer (Non-Tunai) <span id="cashbook-badge-online" class="source-mini-badge">POS</span>
+                        </label>
+                        <div class="cb-input-rp-wrap">
+                          <span>Rp</span>
+                          <input type="number" id="cashbook-input-online" placeholder="0" min="0" step="any">
+                        </div>
+                        <small id="cashbook-online-meta" style="display:none;"></small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ================================================= -->
+                  <!-- TAHAP 1: HITUNG PECAHAN UANG FISIK DI LACI        -->
+                  <!-- ================================================= -->
+                  <div class="cb-step-card cb-denom-card">
+                    <div class="cb-denom-header">
+                      <div>
+                        <div class="cb-denom-title-row">
+                          <span class="cb-step-num">1</span>
+                          <strong>HITUNG PECAHAN UANG FISIK DI LACI</strong>
+                        </div>
+                        <p class="cb-denom-sub">Masukkan jumlah lembar & koin riil yang ada di laci saat ini</p>
+                      </div>
+                      <div class="cb-denom-actions">
+                        <span class="cb-denom-count-badge" id="cashbook-denom-active-count">0 jenis pecahan terisi</span>
+                        <button type="button" class="cb-btn-denom-reset" id="btn-reset-denom" onclick="resetCashbookDenominations()" title="Kosongkan hitungan pecahan ke 0">
+                          Reset (0)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="cb-denom-grid" id="cashbook-denom-grid">
+                      <!-- Dirender dinamis oleh JS: Rp 100.000 s/d Rp 2rb / 1rb -->
+                    </div>
+
+                    <div class="cb-denom-footer">
+                      <div>
+                        <span class="cb-denom-total-label">Total Uang Fisik Dihitung:</span>
+                        <strong class="cb-denom-total-val font-numeric" id="cashbook-denom-total">Rp 0</strong>
+                      </div>
+                    </div>
+
+                    <button type="button" class="cb-btn-match-system" id="btn-match-system" onclick="revealCashbookSystemReconciliation(true)">
+                      <i data-lucide="eye" style="width:16px;height:16px;"></i>
+                      <span id="label-match-system">Cocokkan dengan Saldo Sistem</span>
+                    </button>
+                  </div>
+
+                  <!-- ================================================= -->
+                  <!-- TAHAP 2: REKONSILIASI SALDO SISTEM (BLIND MODE)   -->
+                  <!-- ================================================= -->
+                  <div class="cb-step-card cb-reconcile-card" id="cashbook-reconcile-section">
+                    <div class="cb-reconcile-head">
+                      <div class="cb-denom-title-row">
+                        <span class="cb-step-num">2</span>
+                        <strong>REKONSILIASI SALDO SISTEM</strong>
+                      </div>
+                      <button type="button" class="cb-btn-toggle-blind" id="btn-toggle-blind-mode" onclick="toggleCashbookBlindMode()">
+                        <i data-lucide="eye" style="width:13px;height:13px;"></i>
+                        <span>Lihat Target Sistem</span>
+                      </button>
+                    </div>
+
+                    <!-- State A: Mode Hitung Buta Aktif (Default) -->
+                    <div class="cb-blind-mode-box" id="cashbook-blind-box">
+                      <div class="cb-blind-icon">
+                        <i data-lucide="eye-off" style="width:20px;height:20px;"></i>
+                      </div>
+                      <strong class="cb-blind-title">Mode Hitung Buta Aktif</strong>
+                      <p class="cb-blind-desc">
+                        Target saldo sistem disembunyikan agar hitungan uang fisik di atas tetap objektif.<br>
+                        Klik <strong>Cocokkan dengan Saldo Sistem</strong> setelah selesai menghitung laci.
+                      </p>
+                    </div>
+
+                    <!-- State B: Rincian Saldo Sistem & Hasil Pencocokan (Terbuka setelah klik Cocokkan) -->
+                    <div class="cb-system-ledger-card" id="cashbook-system-revealed" style="display:none;">
+                      <div class="cb-ledger-row">
+                        <span class="cb-ledger-label"><strong class="cb-sign-plus">[+]</strong> Modal Pagi di Laci</span>
+                        <strong class="cb-ledger-val font-numeric" id="cashbook-summary-modal-awal">Rp 0</strong>
+                      </div>
+
+                      <div class="cb-ledger-row">
+                        <span class="cb-ledger-label">
+                          <strong class="cb-sign-plus">[+]</strong> Omset Tunai Masuk Laci
+                          <small id="cashbook-pendapatan-meta">(0 transaksi)</small>
+                        </span>
+                        <strong class="cb-ledger-val font-numeric cb-text-success" id="cashbook-val-omset-tunai">Rp 0</strong>
+                      </div>
+
+                      <div class="cb-ledger-row">
+                        <span class="cb-ledger-label"><strong class="cb-sign-minus">[-]</strong> Belanja dari Laci Hari Ini</span>
+                        <strong class="cb-ledger-val font-numeric cb-text-danger" id="cashbook-ledger-belanja">(Rp 0)</strong>
+                      </div>
+
+                      <!-- Info Non-Tunai (QRIS & Transfer) -->
+                      <div class="cb-qris-info-bar">
+                        <div class="cb-qris-line">
+                          <span class="cb-dot-info"></span>
+                          <span>QRIS & Transfer Bank (Non-Tunai):</span>
+                          <strong class="font-numeric" id="cashbook-readout-online">Rp 0 (Langsung ke Bank)</strong>
+                        </div>
+                        <div class="cb-notebook-bridge-line">
+                          <span>Total Penjualan POS: <strong id="cashbook-readout-pendapatan" class="font-numeric">Rp 0</strong></span>
+                          <span>•</span>
+                          <span>Sisa Modal Pagi: <strong id="cashbook-formula-sisa" class="font-numeric">Rp 0</strong></span>
+                          <span id="cashbook-formula-sisa-desc" style="display:none;"></span>
+                        </div>
+                      </div>
+
+                      <!-- Target Uang Fisik Wajib Ada di Laci -->
+                      <div class="cb-target-tunai-bar">
+                        <div>
+                          <strong class="cb-target-title">Target Saldo Tunai Sistem:</strong>
+                          <span class="cb-target-sub" id="cashbook-equation-preview">Wajib ada di dalam laci</span>
+                        </div>
+                        <div class="cb-target-amount font-numeric" id="cashbook-val-tunai">Rp 0</div>
+                      </div>
+
+                      <!-- Status Pencocokan Fisik vs Sistem -->
+                      <div class="cb-reconcile-result-row">
+                        <div class="cb-denom-diff-pill" id="cashbook-denom-diff">
+                          <i data-lucide="check" style="width:13px;height:13px;"></i>
+                          <span>Selisih Rp 0 (Tepat Cocok)</span>
+                        </div>
+                        <button type="button" class="cb-btn-denom-auto" onclick="autoMatchCashbookDenominations()" title="Isi otomatis pecahan sesuai target sistem">
+                          Isi Sesuai Target
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ================================================= -->
+                  <!-- TAHAP 3: PEMBAGIAN UANG LACI (SAAT TUTUP SHIFT)   -->
+                  <!-- ================================================= -->
+                  <div class="cb-step-card cb-final-split-card">
+                    <div class="cb-split-head">
+                      <div class="cb-denom-title-row">
+                        <span class="cb-step-num">3</span>
+                        <strong>PEMBAGIAN UANG LACI (SAAT TUTUP SHIFT)</strong>
+                      </div>
+                      <span>Pilih saran atau ketik nominal</span>
+                    </div>
+
+                    <!-- Tombol Saran Pembulatan Cepat -->
+                    <div class="cashbook-quick-split-bar" id="cashbook-quick-split-bar"></div>
+
+                    <div class="cb-split-inputs-grid">
+                      <div class="cb-split-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                          <label for="cashbook-input-save">Setor ke Owner / Brankas</label>
+                          <strong class="font-numeric" id="cashbook-readout-save" style="display:none;">Rp 0</strong>
+                        </div>
+                        <div class="cb-input-rp-wrap">
+                          <span>Rp</span>
+                          <input type="number" id="cashbook-input-save" placeholder="0" min="0" step="any">
+                        </div>
+                        <small>Uang dimasukkan ke amplop setoran</small>
+                      </div>
+
+                      <div class="cb-split-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                          <label for="cashbook-input-modal-esok">Modal Tinggal di Laci (Besok)</label>
+                          <strong class="font-numeric" id="cashbook-readout-modal-esok" style="display:none;">Rp 0</strong>
+                        </div>
+                        <div class="cb-input-rp-wrap">
+                          <span>Rp</span>
+                          <input type="number" id="cashbook-input-modal-esok" placeholder="0" min="0" step="any">
+                        </div>
+                        <small>Uang kembalian untuk shift pagi besok</small>
+                      </div>
+                    </div>
+
+                    <div id="cashbook-allocation-alert" class="cashbook-alloc-feedback" role="status" aria-live="polite">
+                      Ketik nominal <strong>Setor</strong> atau <strong>Modal Besok</strong>, pasangan nilainya dihitung otomatis.
+                    </div>
+                  </div>
+                </div>
+
+                <!-- TOMBOL UTAMA KUNCI & SIMPAN TUTUP SHIFT -->
+                <div class="cb-panel-right-footer">
+                  <button type="button" class="cb-btn-lock-shift" id="btn-save-cashbook" onclick="saveCurrentCashbook(true)">
+                    <i data-lucide="lock" style="width:16px;height:16px;"></i> Kunci & Simpan Tutup Shift
+                  </button>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
 
-        <!-- Touch-Friendly Horizontal Filter Chips (No wrapping clutter on phone) -->
-        <div class="ledger-filter-wrapper">
-          <div class="ledger-filter-chips">
-            <button class="filter-chip active" data-expense-filter="ALL" id="tab-exp-all">
-              <i data-lucide="layers" style="width:14px;height:14px;"></i> Semua Biaya
+        <!-- ========================================================= -->
+        <!-- MODE 2: RIWAYAT BULANAN & TALANGAN KARYAWAN               -->
+        <!-- ========================================================= -->
+        <div id="expense-view-history" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+            <button type="button" class="btn-outline" id="tab-mode-cashbook" onclick="switchExpenseMode('CASHBOOK')">
+              <i data-lucide="arrow-left" style="width:15px;height:15px;"></i> Kembali ke Buku Kas Laci Harian
             </button>
-            <button class="filter-chip" data-expense-filter="KASIR" id="tab-exp-kasir">
-              <i data-lucide="wallet" style="width:14px;height:14px;"></i> Dari Kas Toko
-            </button>
-            <button class="filter-chip" data-expense-filter="PENDING" id="tab-exp-pending">
-              <i data-lucide="clock" style="width:14px;height:14px;"></i> Talangan (Belum Diganti)
-            </button>
-            <button class="filter-chip" data-expense-filter="SETTLED" id="tab-exp-settled">
-              <i data-lucide="check-circle" style="width:14px;height:14px;"></i> Talangan (Lunas)
+            <button class="btn-primary-sm" type="button" id="btn-open-add-expense" onclick="openAddExpenseModal()">
+              <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> Catat Biaya / Talangan Manual
             </button>
           </div>
-        </div>
 
-        <!-- Dynamic Date-Grouped Container -->
-        <div id="expense-grouped-container">
-          <!-- JS Render -->
+          <!-- Ringkasan Bulanan & Talangan Karyawan -->
+          <div class="expense-ledger-hero">
+            <div class="ledger-hero-primary">
+              <span class="ledger-hero-label">Total Beban Operasional Bulan Ini</span>
+              <div class="ledger-hero-amount" id="exp-stat-month">Rp 0</div>
+              <div class="ledger-hero-meta" id="exp-stat-month-sub">0 Transaksi Pengeluaran</div>
+            </div>
+            <div class="ledger-hero-secondary">
+              <div class="ledger-sub-card">
+                <span class="ledger-sub-label">Kas Keluar Hari Ini</span>
+                <div class="ledger-sub-val" id="exp-stat-today">Rp 0</div>
+                <span class="ledger-sub-desc" id="exp-stat-today-sub">Dari laci kasir: Rp 0</span>
+              </div>
+              <div class="ledger-sub-card alert" id="card-metric-reimb">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                  <span class="ledger-sub-label">Talangan Karyawan</span>
+                  <span class="badge-alert-count" id="exp-stat-reimb-count">0 Menunggu</span>
+                </div>
+                <div class="ledger-sub-val alert-text" id="exp-stat-reimb-pending">Rp 0</div>
+                <span class="ledger-sub-desc">Belum dilunasi dari kas kasir</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Touch-Friendly Horizontal Filter Chips -->
+          <div class="ledger-filter-wrapper">
+            <div class="ledger-filter-chips">
+              <button class="filter-chip active" data-expense-filter="ALL" id="tab-exp-all">
+                <i data-lucide="layers" style="width:14px;height:14px;"></i> Semua Biaya
+              </button>
+              <button class="filter-chip" data-expense-filter="KASIR" id="tab-exp-kasir">
+                <i data-lucide="wallet" style="width:14px;height:14px;"></i> Dari Kas Toko
+              </button>
+              <button class="filter-chip" data-expense-filter="PENDING" id="tab-exp-pending">
+                <i data-lucide="clock" style="width:14px;height:14px;"></i> Talangan (Belum Diganti)
+              </button>
+              <button class="filter-chip" data-expense-filter="SETTLED" id="tab-exp-settled">
+                <i data-lucide="check-circle" style="width:14px;height:14px;"></i> Talangan (Lunas)
+              </button>
+            </div>
+          </div>
+
+          <!-- Dynamic Date-Grouped Container -->
+          <div id="expense-grouped-container">
+            <!-- JS Render -->
+          </div>
         </div>
       </section>
 
@@ -680,7 +1277,7 @@
           <button type="button" onclick="handleScanBluetoothPrinter()" style="background:transparent; border:none; color:var(--primary); font-size:11px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
             <i data-lucide="search" style="width:12px;height:12px;"></i> Cari Printer Bluetooth
           </button>
-          <button type="button" onclick="window.print()" style="background:transparent; border:none; color:var(--text-muted); font-size:11px; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+          <button type="button" onclick="handleSystemPrint()" style="background:transparent; border:none; color:var(--text-muted); font-size:11px; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
             <i data-lucide="printer" style="width:12px;height:12px;"></i> Cetak Sistem (WiFi)
           </button>
         </div>
@@ -1280,6 +1877,135 @@
           <button type="submit" class="btn-primary" id="btn-save-edit-user">Simpan Perubahan</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal Lembar Audit & Rekap Kas Laci Harian (Pratinjau & Ekspor Laporan) -->
+  <div class="modal-overlay" id="modal-cashbook-audit" role="dialog" aria-modal="true" aria-labelledby="audit-modal-title">
+    <div class="modal-card cb-audit-modal-card">
+      <!-- Dark Header Bar -->
+      <div class="cb-audit-header">
+        <div>
+          <h3 id="audit-modal-title" class="cb-audit-title">Lembar Audit & Rekap Kas Laci Harian</h3>
+          <p class="cb-audit-subtitle">Raya Koffie & Carwash • Cabang Utama</p>
+        </div>
+        <button type="button" class="cb-audit-close" onclick="closeCashbookAuditModal()" aria-label="Tutup modal pratinjau">
+          <i data-lucide="x" style="width:18px;height:18px;"></i>
+        </button>
+      </div>
+
+      <!-- Scrollable Body -->
+      <div class="cb-audit-body">
+        <!-- Metadata Bar + Status Selisih -->
+        <div class="cb-audit-meta-bar">
+          <div class="cb-audit-meta-items">
+            <span class="cb-audit-meta-item">No. Dokumen <strong id="audit-doc-no">KAS-20261025</strong></span>
+            <span class="cb-audit-meta-item">Tanggal <strong id="audit-doc-date">Minggu, 25 Oktober 2026</strong></span>
+            <span class="cb-audit-meta-item">Petugas <strong id="audit-doc-cashier">Admin Utama</strong></span>
+            <span class="cb-audit-meta-item">Status <strong id="audit-doc-status">Belum Dikunci (Shift Aktif)</strong></span>
+          </div>
+          <div class="cb-audit-diff-row">
+            <span class="cb-audit-diff-pill" id="audit-diff-badge">Tepat Cocok (Rp 0)</span>
+          </div>
+        </div>
+
+        <!-- 4 KPI Summary Cards -->
+        <div class="cb-audit-kpi-grid">
+          <div class="cb-audit-kpi-card">
+            <span class="cb-audit-kpi-label">MODAL AWAL PAGI</span>
+            <strong class="cb-audit-kpi-val font-numeric" id="audit-kpi-modal">Rp 0</strong>
+          </div>
+          <div class="cb-audit-kpi-card">
+            <span class="cb-audit-kpi-label">BELANJA KAS LACI</span>
+            <strong class="cb-audit-kpi-val font-numeric" id="audit-kpi-belanja">-Rp 0</strong>
+          </div>
+          <div class="cb-audit-kpi-card">
+            <span class="cb-audit-kpi-label">SISA MODAL PAGI</span>
+            <strong class="cb-audit-kpi-val font-numeric" id="audit-kpi-sisa">Rp 0</strong>
+          </div>
+          <div class="cb-audit-kpi-card">
+            <span class="cb-audit-kpi-label">TARGET FISIK LACI</span>
+            <strong class="cb-audit-kpi-val font-numeric" id="audit-kpi-target">Rp 0</strong>
+          </div>
+        </div>
+
+        <!-- 2 Side-by-Side Tables: A. Rekonsiliasi & Alokasi | B. Audit Pecahan Uang Fisik -->
+        <div class="cb-audit-tables-grid">
+          <div class="cb-audit-section">
+            <h4 class="cb-audit-sec-title">A. REKONSILIASI & ALOKASI</h4>
+            <div class="cb-audit-table-wrap">
+              <table class="cb-audit-table">
+                <thead>
+                  <tr>
+                    <th>Rekonsiliasi Saldo Sistem</th>
+                    <th style="text-align:right;">Nominal</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-tbody-reconcile">
+                  <!-- Dirender oleh JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cb-audit-section">
+            <h4 class="cb-audit-sec-title">B. AUDIT PECAHAN UANG FISIK</h4>
+            <div class="cb-audit-table-wrap">
+              <table class="cb-audit-table">
+                <thead>
+                  <tr>
+                    <th>Pecahan</th>
+                    <th style="text-align:center;">Lembar</th>
+                    <th style="text-align:right;">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-tbody-denom">
+                  <!-- Dirender oleh JS -->
+                </tbody>
+                <tfoot id="audit-tfoot-denom">
+                  <!-- Dirender oleh JS -->
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table C: Rincian Pengeluaran Kas Laci -->
+        <div class="cb-audit-section">
+          <h4 class="cb-audit-sec-title" id="audit-sec-title-expense">C. RINCIAN PENGELUARAN KAS LACI (0)</h4>
+          <div class="cb-audit-table-wrap">
+            <table class="cb-audit-table">
+              <thead>
+                <tr>
+                  <th style="width:45px; text-align:center;">No</th>
+                  <th style="width:85px;">Jam</th>
+                  <th style="width:110px;">Divisi</th>
+                  <th>Keterangan</th>
+                  <th style="width:150px;">Sumber Dana</th>
+                  <th style="width:130px; text-align:right;">Nominal</th>
+                </tr>
+              </thead>
+              <tbody id="audit-tbody-expenses">
+                <!-- Dirender oleh JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="cb-audit-footer">
+        <button type="button" class="cb-audit-btn-close" onclick="closeCashbookAuditModal()">Tutup</button>
+        <button type="button" class="cb-audit-btn-thermal" onclick="openCashbookThermalReceipt()" title="Cetak ke printer struk kasir">
+          <i data-lucide="printer" style="width:15px;height:15px;"></i> Cetak Struk
+        </button>
+        <button type="button" class="cb-audit-btn-excel" onclick="exportCashbookAuditExcel()">
+          <i data-lucide="file-spreadsheet" style="width:15px;height:15px;"></i> Unduh Excel
+        </button>
+        <button type="button" class="cb-audit-btn-pdf" onclick="exportCashbookAuditPdf()">
+          <i data-lucide="file-down" style="width:15px;height:15px;"></i> Unduh PDF
+        </button>
+      </div>
     </div>
   </div>
 

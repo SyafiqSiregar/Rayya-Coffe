@@ -1,7 +1,10 @@
+import { registerPlugin, Capacitor } from '@capacitor/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 
+const BluetoothPrinter = registerPlugin('BluetoothPrinter');
+
 /**
- * Save text/HTML/Base64 content directly to the Android Tablet's Local Storage (Documents / Download)
+ * Save text/HTML/Base64 content directly to the Android Tablet's Local Storage (Download/RayaKoffie or Documents/RayaKoffie)
  * 100% Offline, no external APIs required.
  * 
  * @param {string} fileName - e.g. "Rekap_RayaKoffie_kafe_2026-10-03.pdf" or ".xls"
@@ -11,8 +14,29 @@ import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
  * @returns {Promise<{success: boolean, path: string, message: string}>}
  */
 export async function saveFileToLocalDevice(fileName, fileContent, mimeType = 'application/vnd.ms-excel', isBase64 = false) {
+  // 1. Primary on Android Tablet: Native MediaStore Downloads (Zero Scoped Storage issues on Android 10-16+)
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const nativeRes = await BluetoothPrinter.saveFileToDownloads({
+        fileName,
+        content: fileContent,
+        mimeType,
+        isBase64: Boolean(isBase64)
+      });
+      if (nativeRes && nativeRes.success) {
+        return {
+          success: true,
+          path: nativeRes.path || `Download/RayaKoffie/${fileName}`,
+          message: nativeRes.message || `File berhasil disimpan: Download/RayaKoffie/${fileName}`
+        };
+      }
+    } catch (mediaStoreErr) {
+      console.warn('MediaStore saveFileToDownloads fallback to Capacitor Filesystem:', mediaStoreErr);
+    }
+  }
+
   try {
-    // 1. Try Native Capacitor Filesystem (Offline Local Device Storage)
+    // 2. Fallback Native Capacitor Filesystem (Offline Local Device Storage)
     const writeOptions = {
       path: `RayaKoffie/${fileName}`,
       data: fileContent,
@@ -33,9 +57,31 @@ export async function saveFileToLocalDevice(fileName, fileContent, mimeType = 'a
       message: `File berhasil disimpan ke memori internal: Documents/RayaKoffie/${fileName}`
     };
   } catch (nativeErr) {
-    console.warn('Capacitor Filesystem not active or failed, using browser fallback download:', nativeErr);
+    console.warn('Capacitor Filesystem Documents failed, trying External/Browser fallback:', nativeErr);
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const extWriteOptions = {
+          path: `RayaKoffie/${fileName}`,
+          data: fileContent,
+          directory: Directory.External,
+          recursive: true
+        };
+        if (!isBase64) {
+          extWriteOptions.encoding = Encoding.UTF8;
+        }
+        const extRes = await Filesystem.writeFile(extWriteOptions);
+        return {
+          success: true,
+          path: extRes.uri || `Android/data/com.rayakoffie.webpos/files/RayaKoffie/${fileName}`,
+          message: `File berhasil disimpan di memori aplikasi: RayaKoffie/${fileName}`
+        };
+      } catch (extErr) {
+        console.warn('Capacitor External directory also failed:', extErr);
+      }
+    }
     
-    // 2. Browser Local Download Fallback
+    // 3. Browser Local Download Fallback
     try {
       let blob;
       if (isBase64) {

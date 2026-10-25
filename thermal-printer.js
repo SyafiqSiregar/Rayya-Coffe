@@ -1,7 +1,11 @@
 // =======================================================
 // Raya Koffie - Offline Bluetooth ESC/POS Thermal Printer Driver
-// Supports: Direct Web Bluetooth, Android POS Intent (RawBT), & System Print
+// Supports: Native Android Bluetooth (Capacitor), Direct Web Bluetooth, Android POS Intent (RawBT), & System Print
 // =======================================================
+
+import { registerPlugin, Capacitor } from '@capacitor/core';
+
+const BluetoothPrinter = registerPlugin('BluetoothPrinter');
 
 let connectedBluetoothDevice = null;
 let bluetoothCharacteristic = null;
@@ -59,6 +63,63 @@ export function generateEscPosBytes(trx, paperWidth = 32) {
   esc += 'IG: @raya_koffie_tubaba\n';
   esc += formatDivider('=', paperWidth);
 
+  if (trx && trx.isCashbookReceipt) {
+    esc += CMD.ALIGN_CENTER + CMD.BOLD_ON;
+    esc += 'BUKU KAS & TUTUP LACI\n';
+    esc += CMD.BOLD_OFF + CMD.ALIGN_LEFT;
+    esc += `Tgl  : ${trx.friendlyDate || trx.date}\n`;
+    esc += `Kasir: ${trx.cashierName || 'Kasir Raya'}\n`;
+    esc += formatDivider('-', paperWidth);
+
+    esc += CMD.BOLD_ON;
+    esc += formatTwoColumns('Modal Awal', 'Rp ' + (trx.modalAwal || 0).toLocaleString('id-ID'), paperWidth);
+    esc += CMD.BOLD_OFF;
+
+    esc += 'Belanja Harian:\n';
+    if (trx.shoppingItems && trx.shoppingItems.length > 0) {
+      trx.shoppingItems.forEach(item => {
+        esc += formatTwoColumns(`* ${item.desc}`, (item.amount || 0).toLocaleString('id-ID'), paperWidth);
+      });
+    } else {
+      esc += '  (Tidak ada belanja kas)\n';
+    }
+    esc += formatTwoColumns('Total Belanja', '-' + (trx.belanjaHarian || 0).toLocaleString('id-ID'), paperWidth);
+    esc += formatDivider('-', paperWidth);
+
+    const sisaSign = (trx.sisaModal || 0) < 0 ? '-' : '';
+    const sisaStr = `${sisaSign}Rp ${Math.abs(trx.sisaModal || 0).toLocaleString('id-ID')}`;
+    esc += CMD.BOLD_ON;
+    esc += formatTwoColumns('Sisa Modal', sisaStr, paperWidth);
+    esc += CMD.BOLD_OFF;
+    esc += formatDivider('-', paperWidth);
+
+    esc += formatTwoColumns('Pendapatan', (trx.pendapatan || 0).toLocaleString('id-ID'), paperWidth);
+    esc += formatTwoColumns('Online', '-' + (trx.online || 0).toLocaleString('id-ID'), paperWidth);
+    esc += formatDivider('=', paperWidth);
+
+    esc += CMD.BOLD_ON;
+    esc += formatTwoColumns('TOTAL TUNAI', 'Rp ' + (trx.totalTunai || 0).toLocaleString('id-ID'), paperWidth);
+    esc += CMD.BOLD_OFF;
+    esc += formatDivider('-', paperWidth);
+
+    esc += formatTwoColumns('Save (Setor)', 'Rp ' + (trx.saveAmount || 0).toLocaleString('id-ID'), paperWidth);
+    esc += CMD.BOLD_ON;
+    esc += formatTwoColumns('Modal Esok', 'Rp ' + (trx.modalEsok || 0).toLocaleString('id-ID'), paperWidth);
+    esc += CMD.BOLD_OFF;
+    esc += formatDivider('=', paperWidth);
+    esc += CMD.ALIGN_CENTER;
+    esc += 'Rumus: Pendapatan (+-) Sisa\n';
+    esc += 'Modal - Online = Tunai\n\n';
+    esc += CMD.FEED_3;
+    esc += CMD.CUT;
+
+    const uint8Cb = new Uint8Array(esc.length);
+    for (let i = 0; i < esc.length; i++) {
+      uint8Cb[i] = esc.charCodeAt(i) & 0xff;
+    }
+    return uint8Cb;
+  }
+
   // 2. Transaction Metadata (Left-aligned)
   esc += CMD.ALIGN_LEFT;
   esc += `No   : ${trx.id}\n`;
@@ -114,9 +175,43 @@ export function generateEscPosBytes(trx, paperWidth = 32) {
 }
 
 /**
- * Connect to Nearby Bluetooth Thermal Printer via Web Bluetooth
+ * Convert Uint8Array to Base64 String
+ */
+export function uint8ArrayToBase64(bytes) {
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+/**
+ * Connect/Select Bluetooth Thermal Printer
+ * Supports Native Android Bluetooth (Capacitor) & Web Bluetooth fallback
  */
 export async function connectBluetoothPrinter() {
+  if (Capacitor.isNativePlatform()) {
+    const res = await BluetoothPrinter.listPairedDevices();
+    const list = res.devices || [];
+    if (list.length === 0) {
+      throw new Error('Tidak ada printer Bluetooth yang tersambung (paired). Buka Pengaturan Bluetooth tablet dan pasangkan printer thermal Anda terlebih dahulu.');
+    }
+
+    // Prioritize device with printer keyword
+    let target = list.find(d => {
+      const n = (d.name || '').toLowerCase();
+      return n.includes('print') || n.includes('pos') || n.includes('rpp') || 
+             n.includes('mtp') || n.includes('58') || n.includes('80') || 
+             n.includes('xp') || n.includes('vsc') || n.includes('panda') || 
+             n.includes('eppos') || n.includes('thermal') || n.includes('bt');
+    }) || list[0];
+
+    localStorage.setItem('raya_thermal_printer_mac', target.address);
+    localStorage.setItem('raya_thermal_printer_name', target.name || 'Printer Thermal');
+    return target.name || target.address;
+  }
+
+  // Web Bluetooth (Desktop Chrome fallback)
   if (!navigator.bluetooth) {
     throw new Error('Web Bluetooth tidak didukung di perangkat ini. Gunakan opsi Cetak RawBT atau Cetak Sistem.');
   }
@@ -169,10 +264,29 @@ export async function connectBluetoothPrinter() {
 
 /**
  * Print Directly to Connected Bluetooth Device
+ * Supports Native Android SPP Socket (Capacitor) & Web Bluetooth GATT fallback
  */
 export async function printDirectBluetooth(trx, paperWidth = 32) {
+  const bytes = generateEscPosBytes(trx, paperWidth);
+
+  // 1. Native Android Bluetooth Print (Capacitor on Tablet)
+  if (Capacitor.isNativePlatform()) {
+    const base64Data = uint8ArrayToBase64(bytes);
+    const savedMac = localStorage.getItem('raya_thermal_printer_mac') || null;
+
+    const res = await BluetoothPrinter.printRaw({
+      data: base64Data,
+      address: savedMac
+    });
+
+    if (res && res.deviceName) {
+      localStorage.setItem('raya_thermal_printer_name', res.deviceName);
+    }
+    return res.deviceName || 'Printer Thermal';
+  }
+
+  // 2. Web Bluetooth fallback (Desktop Chrome)
   if (!bluetoothCharacteristic) {
-    // Attempt connection
     await connectBluetoothPrinter();
   }
 
@@ -180,9 +294,7 @@ export async function printDirectBluetooth(trx, paperWidth = 32) {
     throw new Error('Printer Bluetooth belum terhubung.');
   }
 
-  const bytes = generateEscPosBytes(trx, paperWidth);
   const CHUNK_SIZE = 512;
-  
   for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
     const chunk = bytes.slice(i, i + CHUNK_SIZE);
     if (bluetoothCharacteristic.writeValueWithoutResponse) {
@@ -200,15 +312,18 @@ export async function printDirectBluetooth(trx, paperWidth = 32) {
  */
 export function printViaRawBtIntent(trx, paperWidth = 32) {
   const bytes = generateEscPosBytes(trx, paperWidth);
-  
-  // Convert bytes to Base64
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  const base64Data = btoa(binary);
-
-  // RawBT Intent URL format
+  const base64Data = uint8ArrayToBase64(bytes);
   const rawBtUrl = `rawbt:data:base64,${base64Data}`;
   window.location.href = rawBtUrl;
+}
+
+/**
+ * Trigger Android Native PrintManager on Tablet or window.print() on Browser
+ */
+export async function printViaSystemWebView(jobName = 'Raya_Koffie_Struk') {
+  if (Capacitor.isNativePlatform()) {
+    await BluetoothPrinter.printSystemWebView({ jobName });
+    return;
+  }
+  window.print();
 }
